@@ -20,7 +20,7 @@
 - **main.go** – Entry point. Loads config, initialises state & alert managers, spawns watchers, handles signals.
 - **config.go** – Parses YAML config into structs. Validates rules.
 - **watcher.go** – For each rule, watches a directory for file events and polls tracked files for new content. Splits content into lines, discards trailing incomplete line, matches, sends matched lines to a channel.
-- **matcher.go** – Compiles regex patterns and tests lines. Provides `TruncateLogStr()` helper.
+- **matcher.go** – Compiles regex patterns and tests lines. Provides `truncateLogStr()` helper.
 - **alerter.go** – Receives matched lines, accumulates them per rule in an alert window. On cooldown expiry, formats message and executes all action scripts with the message as first argument.
 - **state.go** – Thread-safe JSON offset store. Loads on startup, saves periodically and on shutdown.
 

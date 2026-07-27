@@ -15,7 +15,7 @@ type MatchResult struct {
 }
 
 func NewPatternMatcher(patterns []string, maxLen int) *PatternMatcher {
-	if maxLen == 0 {
+	if maxLen <= 0 {
 		maxLen = 16
 	}
 	pm := &PatternMatcher{
@@ -40,34 +40,35 @@ func NewPatternMatcher(patterns []string, maxLen int) *PatternMatcher {
 func (pm *PatternMatcher) Match(line string) MatchResult {
 	for _, pattern := range pm.patterns {
 		loc := pattern.FindStringIndex(line)
-		if loc != nil {
-			// Extract the matching substring
-			matched := line[loc[0]:loc[1]]
-			// If very short, grab some context after it
-			sample := matched
-			if len(sample) < pm.maxLen && loc[1] < len(line) {
-				end := loc[1] + (pm.maxLen - len(sample))
-				if end > len(line) {
-					end = len(line)
-				}
-				sample = line[loc[0]:end]
+		if loc == nil {
+			continue
+		}
+
+		sample := line[loc[0]:loc[1]]
+
+		// Extend sample to maxLen if there's more content after the match
+		if len(sample) < pm.maxLen {
+			end := loc[1] + (pm.maxLen - len(sample))
+			if end > len(line) {
+				end = len(line)
 			}
-			return MatchResult{
-				Matched: true,
-				Sample:  TruncateLogStr(sample, pm.maxLen),
-			}
+			sample = line[loc[0]:end]
+		}
+
+		return MatchResult{
+			Matched: true,
+			Sample:  truncateLogStr(sample, pm.maxLen),
 		}
 	}
 	return MatchResult{Matched: false}
 }
 
-func TruncateLogStr(s string, maxLen ...int) string {
-	limit := 16
-	if len(maxLen) > 0 && maxLen[0] > 0 {
-		limit = maxLen[0]
+func truncateLogStr(s string, maxLen int) string {
+	if maxLen <= 0 {
+		maxLen = 16
 	}
-	if len(s) > limit {
-		return s[:limit]
+	if len(s) > maxLen {
+		return s[:maxLen]
 	}
 	return s
 }

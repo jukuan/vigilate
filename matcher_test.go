@@ -93,9 +93,9 @@ func TestTruncateLogStr(t *testing.T) {
 		{"exactly 16 chars!!", "exactly 16 chars"},
 	}
 	for _, tt := range tests {
-		got := TruncateLogStr(tt.input, 16)
+		got := truncateLogStr(tt.input, 16)
 		if got != tt.want {
-			t.Errorf("TruncateLogStr(%q) = %q, want %q", tt.input, got, tt.want)
+			t.Errorf("truncateLogStr(%q) = %q, want %q", tt.input, got, tt.want)
 		}
 	}
 }

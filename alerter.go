@@ -32,6 +32,7 @@ type AlertWindow struct {
 	ruleName    string
 	count       int
 	firstLine   string
+	firstFile   string
 	windowStart time.Time
 	cooldown    time.Duration
 	actions     []string
@@ -84,6 +85,7 @@ func (am *AlertManager) AddMatch(line MatchedLine, cooldown time.Duration, actio
 	window.count++
 	if window.count == 1 {
 		window.firstLine = line.Line
+		window.firstFile = line.FilePath
 	}
 }
 
@@ -97,6 +99,7 @@ func (aw *AlertWindow) flush() {
 	aw.mu.Lock()
 	count := aw.count
 	firstLine := aw.firstLine
+	firstFile := aw.firstFile
 	windowStart := aw.windowStart
 	aw.mu.Unlock()
 
@@ -108,8 +111,8 @@ func (aw *AlertWindow) flush() {
 	minutes := max(int(time.Since(windowStart).Minutes()), 1)
 
 	message := fmt.Sprintf(
-		"ALERT: [%s] %d lines in logs for last %d minutes with like %s",
-		aw.ruleName, count, minutes, firstLine)
+		"ALERT: [%s] %s: %d lines in logs for last %d minutes with like %s",
+		aw.ruleName, firstFile, count, minutes, firstLine)
 
 	log.Printf("[%s] Flushing alert: %s", aw.ruleName, message)
 
@@ -120,6 +123,7 @@ func (aw *AlertWindow) flush() {
 	aw.mu.Lock()
 	aw.count = 0
 	aw.firstLine = ""
+	aw.firstFile = ""
 	aw.windowStart = time.Now()
 	aw.timer.Reset(aw.cooldown)
 	aw.mu.Unlock()
